@@ -1,0 +1,15 @@
+system:
+python3-pip
+
+
+
+
+
+
+
+
+
+
+
+python:
+gpiozero
