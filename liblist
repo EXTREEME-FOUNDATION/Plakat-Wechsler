@@ -13,3 +13,5 @@ python3-pip
 
 python:
 gpiozero
+tornado
+bash
