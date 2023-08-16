@@ -43,6 +43,10 @@
             "SDA":"G0",
             "SCL":"G0",
             "_comment":"Will be handled by system, this is just for completion"
+        },
+        "Light":{
+            "Dpin":"D0",
+            "_comment":"The phisical light fixture in the device"
         }
     },
     "Motors":[

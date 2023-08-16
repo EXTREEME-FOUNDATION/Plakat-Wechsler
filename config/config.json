@@ -1,0 +1,19 @@
+{
+    "front":[
+        {
+            "name":"BillaPlus",
+            "Date":"19.5.2023",
+            "Picture":"Billa_23",
+            "Position":3,
+            "Showtime":120
+        }
+    ],
+    "back":[
+        {
+            "name":"Spar",
+            "Date":"21.6.2023",
+            "Picture":"Spar_1",
+            "Position":1
+        }
+    ]
+}
