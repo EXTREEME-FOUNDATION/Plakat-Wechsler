@@ -38,20 +38,20 @@ config.read("config/config.ini")
 logging.info(f"Finished Reading configs:\nPinout Version::{PINOUT['VERSION']}")
 
 
-                    #2,500
-def MAXTIME(time:int) -> FunctionType|TimeoutError:
+                    
+def MAXTIME(time:int=config["SAFETY"]["Shutofftime"]) -> FunctionType:
     """Limits time a function can take"""
     def ovrdecorator(func):
-        def hwlp():
+        def hwlp(sig,frame):
             raise TimeoutError
         def wrapper(*args, **kwargs) -> any:
             signal.signal(signal.SIGALRM,hwlp)
-            signal.alarm(time/1000)
+            signal.alarm(time)
             try:
                 out = func(*args,**kwargs)
                 return out
             except TimeoutError:
-                logging.warn(f"Function \"{func.__name__}\" took to long to execute. ({time/1000}s)")
+                logging.warn(f"Function \"{func.__name__}\" took to long to execute. ({time}s)")
                 return TimeoutError
         return wrapper
     return ovrdecorator
@@ -102,15 +102,15 @@ class Motor:
         s.Direction=0# 0:off/brake | 1: clockwise | -1: counterclockwise
         s.Poster=0 #What poster is beeing shown
         pass
-    @MAXTIME(time=2500)
+    @MAXTIME()
     def __ToRight(s):
         #drive to right
         pass
-    @MAXTIME(time=2500)
+    @MAXTIME()
     def __ToLeft(s):
         #drive to left
         pass
-    @MAXTIME(time=2500)
+    @MAXTIME(time=1)
     def __Stop(s):
         #stop
         pass
@@ -118,20 +118,13 @@ class Motor:
         #drive to poster number
         while(1):
             if num < s.Poster:
-                s.ToLeft()
+                if s.ToLeft() == TimeoutError:
+                    s.Stop()
             elif num > s.Poster:
                 s.ToRight()
             else:
                 s.Stop()
                 break
-
-@MAXTIME(1000)
-def hh():
-    print("go")
-    sleep(10)
-    print("done")
-
-
-
-hh()
-print("done")
+print("finished running")
+sleep(20)
+print("EOF")
