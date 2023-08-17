@@ -1,3 +1,3 @@
 #!/bin/bash
 
-nice -n-20 python start.py
+nice -n-19 python start.py

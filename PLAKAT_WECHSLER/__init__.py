@@ -14,14 +14,15 @@ from PLAKAT_WECHSLER.flows import getstatus
 from PLAKAT_WECHSLER.flows import selftest
 from PLAKAT_WECHSLER.flows import update
 from PLAKAT_WECHSLER.flows import webserv
-
+from PLAKAT_WECHSLER.flows import EStop
 
 from time import sleep
+
 
 VERSION="1.0.0"
 
 
-logging.info(f"Plakat-wechsler {VERSION}.\nCreated by Kelvin Maringer (https://www.mm-edv.at).")
+logging.info(f"\n\n\nPlakat-wechsler {VERSION}\nCreated by Kelvin Maringer (https://www.mm-edv.at).")
 logging.info("Reading Config")
 
 
@@ -33,14 +34,13 @@ with open("config/pinout.json") as s:
 config = configparser.ConfigParser()
 config.read("config/config.ini")
 
-
-
 logging.info(f"Finished Reading configs:\nPinout Version::{PINOUT['VERSION']}")
 
 
                     
-def MAXTIME(time:int=config["SAFETY"]["Shutofftime"]) -> FunctionType:
-    """Limits time a function can take"""
+def MAXTIME(time:int=config["SAFETY"].getint("Shutofftime")) -> FunctionType:
+    """Limits time a function can take, returns TimeoutError
+    -> if out:=decorated_function() == TimeoutError:"""
     def ovrdecorator(func):
         def hwlp(sig,frame):
             raise TimeoutError
@@ -55,6 +55,13 @@ def MAXTIME(time:int=config["SAFETY"]["Shutofftime"]) -> FunctionType:
                 return TimeoutError
         return wrapper
     return ovrdecorator
+
+
+class Safety:
+    def E_STOP(s,msg=None):
+        logging.critical(f"E-STOP TRIGGERED in {s.__class__} with error msg: \"{msg}\"")
+        EStop.E_STOP()
+
 
 
 
@@ -95,36 +102,50 @@ class Sensor:
 
 
 
-class Motor:
+class Motor(Safety):
     def __init__(s,RPin,LPin,SensU,SensD) -> False:
         s.R=RPin
         s.L=LPin
         s.Direction=0# 0:off/brake | 1: clockwise | -1: counterclockwise
         s.Poster=0 #What poster is beeing shown
+
+        #MAKE FUNCTION TO NULL DEVICE (get current poster)
         pass
     @MAXTIME()
     def __ToRight(s):
+        #ONLY USE THIS FUNCTION IF TIMEOUTERROR IS HANDLED!!!
+        #CAN CAUSE DEVICE DAMAGE IF NOT CORRECTLY ADRESSED
         #drive to right
+        sleep(5)
         pass
     @MAXTIME()
     def __ToLeft(s):
+        #ONLY USE THIS FUNCTION IF TIMEOUTERROR IS HANDLED!!!
+        #CAN CAUSE DEVICE DAMAGE IF NOT CORRECTLY ADRESSED
         #drive to left
         pass
     @MAXTIME(time=1)
     def __Stop(s):
+        #ONLY USE THIS FUNCTION IF TIMEOUTERROR IS HANDLED!!!
+        #CAN CAUSE DEVICE DAMAGE IF NOT CORRECTLY ADRESSED
         #stop
         pass
     def ToPosterNum(s,num):
         #drive to poster number
         while(1):
             if num < s.Poster:
-                if s.ToLeft() == TimeoutError:
-                    s.Stop()
+                print("driving to left")
+                if s.__ToLeft() == TimeoutError:
+                    s.E_STOP("Timeout while Driving motor to Left")
             elif num > s.Poster:
-                s.ToRight()
+                print("driving to right")
+                if s.__ToRight() == TimeoutError:
+                    s.E_STOP("Timeout while Driving motor to Left")
             else:
-                s.Stop()
+                print("Reached destination")
+                if s.__Stop() == TimeoutError:
+                    s.E_STOP("Timeout while Stopping")
                 break
-print("finished running")
-sleep(20)
-print("EOF")
+
+MorL = Motor(1,2,4,5)
+MorL.ToPosterNum(2)
