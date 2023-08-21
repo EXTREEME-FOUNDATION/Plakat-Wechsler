@@ -1,10 +1,10 @@
 {
-    "_comment":"Pinout used by the program, DO NOT EDIT WITHOUT KNOWING WHAT YOU ARE DOING! VERSION should always be the same as the board version",
+    "_comment":"Pinout used by the program, DO NOT EDIT WITHOUT KNOWING WHAT YOU ARE DOING! VERSION should always match board version",
     "VERSION":"1.0.0",
     "Sensor": {
         "light": [
             {
-                "Apin":"A0",
+                "Apin":0,
                 "maxL":5,
                 "minL":1000,
                 "_comment":"maxL and minL are used to determine the relative value of the PRS's and will be normalized between 0.0 and 1.0 in code."
@@ -13,50 +13,59 @@
         ],
         "Ind.Sensors": [
             {
-                "Dpin":"D0",
+                "Dpin":0,
                 "Location":"up"
             },
             {
-                "Dpin":"D0",
+                "Dpin":0,
                 "Location":"down"
             }
         ],
         "other":[
             {
                 "Name":"open",
-                "Dpin":"D0"
+                "Dpin":0
+            },
+            {
+                "Name":"open",
+                "Dpin":0
             }
         ],
         "Buttons":[
             {
-                "Dpin":"D0",
+                "Dpin":0,
                 "function":"left"
             },
             {
-                "Dpin":"D0",
+                "Dpin":0,
                 "function":"right"
             }
         ]
     },
     "Modules":{
         "RC":{
-            "SDA":"G0",
-            "SCL":"G0",
+            "SDA":0,
+            "SCL":0,
             "_comment":"Will be handled by system, this is just for completion"
         },
         "Light":{
-            "Dpin":"D0",
+            "Dpin":0,
             "_comment":"The phisical light fixture in the device"
         }
     },
     "Motors":[
         {
-            "DpinL":"D0",
-            "DpinR":"D0"
+            "DpinL":0,
+            "DpinR":0,
+            "Ind_UP.Dpin":0,
+            "Ind_DOWN.Dpin":0
+            
         },
         {
-            "DpinL":"D0",
-            "DpinR":"D0"
+            "DpinL":0,
+            "DpinR":0,
+            "Ind_UP.Dpin":0,
+            "Ind_DOWN.Dpin":0
         }
     ]
 }

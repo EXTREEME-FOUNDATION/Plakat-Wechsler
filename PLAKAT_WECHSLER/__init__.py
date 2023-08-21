@@ -2,7 +2,6 @@
 import numpy
 import math
 import logging
-from logging import CRITICAL, INFO, WARNING, ERROR, DEBUG
 import json
 import configparser
 import multiprocessing
@@ -10,36 +9,17 @@ import signal
 from types import FunctionType
 
 # IMPORT flows
-from PLAKAT_WECHSLER.flows import getstatus
-from PLAKAT_WECHSLER.flows import selftest
-from PLAKAT_WECHSLER.flows import update
-from PLAKAT_WECHSLER.flows import webserv
 from PLAKAT_WECHSLER.flows import EStop
 
 from time import sleep
 
 
-VERSION="1.0.0"
-
-
-logging.info(f"\n\n\nPlakat-wechsler {VERSION}\nCreated by Kelvin Maringer (https://www.mm-edv.at).")
-logging.info("Reading Config")
-
-
-#PINOUT=None
-with open("config/pinout.json") as s:
-    global PINOUT
-    PINOUT = json.loads(s.read())
-
 config = configparser.ConfigParser()
 config.read("config/config.ini")
 
-logging.info(f"Finished Reading configs:\nPinout Version::{PINOUT['VERSION']}")
-
-
                     
 def MAXTIME(time:int=config["SAFETY"].getint("Shutofftime")) -> FunctionType:
-    """Limits time a function can take, returns TimeoutError
+    """Limits time a function can take, returns TimeoutError if time has elapsed
     -> if out:=decorated_function() == TimeoutError:"""
     def ovrdecorator(func):
         def hwlp(sig,frame):
@@ -57,25 +37,23 @@ def MAXTIME(time:int=config["SAFETY"].getint("Shutofftime")) -> FunctionType:
     return ovrdecorator
 
 
+
 class Safety:
+    """implements different safety features into other classes"""
     def E_STOP(s,msg=None):
-        logging.critical(f"E-STOP TRIGGERED in {s.__class__} with error msg: \"{msg}\"")
+        logging.critical(f"E-STOP TRIGGERED in <{s}> with error msg: \"{msg}\"")
         EStop.E_STOP()
 
 
-
-
-
 class LightSensor:
-    def __init__(s,maxL,minL,APin) -> bool:
+    def __init__(s,maxL:float,minL:float,APin:int,Activval:float):
+        """maxL: maximum value of PRS
+        minL: minimum value of PRS
+        Activval: relative value at which the sensor is activated"""
         s.Value=0.0
         s.normvals=(maxL,minL)
         s.APin=APin
         testok = s.update()
-        if testok in (0.0,1.0):
-            logging.error(f"Light sensor defective, value of {testok}")
-            return False
-        return True
 
     def update(s) -> float:
         #Code to read sensor
@@ -85,7 +63,7 @@ class LightSensor:
         return s.Value
     
 class Sensor:
-    def __init__(s,DPin) -> bool:
+    def __init__(s,DPin):
         s.State=False
         s.Dpin=DPin
         testok = s.update()
@@ -103,7 +81,8 @@ class Sensor:
 
 
 class Motor(Safety):
-    def __init__(s,RPin,LPin,SensU,SensD) -> False:
+    def __init__(s,RPin:int,LPin:int,SensU:Sensor,SensD:Sensor) -> False:
+        """SensU: end-sensor | SensD: sensor for poster halt"""
         s.R=RPin
         s.L=LPin
         s.Direction=0# 0:off/brake | 1: clockwise | -1: counterclockwise
@@ -137,6 +116,7 @@ class Motor(Safety):
                 print("driving to left")
                 if s.__ToLeft() == TimeoutError:
                     s.E_STOP("Timeout while Driving motor to Left")
+                    #Possible __ToRight() implementation
             elif num > s.Poster:
                 print("driving to right")
                 if s.__ToRight() == TimeoutError:
@@ -146,6 +126,6 @@ class Motor(Safety):
                 if s.__Stop() == TimeoutError:
                     s.E_STOP("Timeout while Stopping")
                 break
+    def __str__(s):
+        return f"Motor@Pin{s.R} and Pin{s.L}"
 
-MorL = Motor(1,2,4,5)
-MorL.ToPosterNum(2)
