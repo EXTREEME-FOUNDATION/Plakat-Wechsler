@@ -44,7 +44,7 @@ if __name__ == "__main__":
         Lsens = LightSensor(PINOUT["Sensor"]["light"][0]["maxL"],PINOUT["Sensor"]["light"][0]["minL"],PINOUT["Sensor"]["light"][0]["Apin"],config["LIGHT"]["LightThreashhold"])
         logging.info(f"1 Light Sensor@Pin{Lsens.APin} active")
 
-        Opne = Sensor(PINOUT["Sensor"]["other"][0][])
+        Opne = Sensor(PINOUT["Sensor"]["other"][0][0]) # PARRALELL SWITCH
 
 
         Motors[0].ToPosterNum(2)
