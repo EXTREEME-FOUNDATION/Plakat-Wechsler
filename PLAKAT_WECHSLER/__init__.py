@@ -1,4 +1,4 @@
-#import gpiozero
+import RPi.GPIO as gz
 import numpy
 import math
 import logging
@@ -43,6 +43,23 @@ class Safety:
     def E_STOP(s,msg=None):
         logging.critical(f"E-STOP TRIGGERED in <{s}> with error msg: \"{msg}\"")
         EStop.E_STOP()
+
+
+class Actor:
+    state=False
+    def __init__(s,Dpin:int):
+        s.DPin=Dpin
+        gz.setup(s.DPin,gz.OUT)
+    def Switch(s):
+        if s.state: s.off()
+        else: s.on()
+    def on(s):
+        s.tostate(True)
+    def off(s):
+        s.tostate(False)
+    def tostate(s,state:bool):
+        gz.output(s.DPin,state)
+        s.state = state
 
 
 class LightSensor:
@@ -128,4 +145,12 @@ class Motor(Safety):
                 break
     def __str__(s):
         return f"Motor@Pin{s.R} and Pin{s.L}"
+
+
+class WECHSLER(Safety):
+    """takes all input classes and puts them in an easy to access class.
+    1 class instance represents 1 side of the Presenter"""
+    def __init__(s,Motor:Motor,open:Sensor,Lightsens:LightSensor=None,Light:Actor=None):
+        pass
+
 

@@ -10,6 +10,8 @@ logging.info("_"*60)
 
 
 #imports
+import RPi.GPIO as gz
+gz.setmode(gz.BCM)
 from PLAKAT_WECHSLER import *
 from PLAKAT_WECHSLER.flows.EStop import E_STOP
 import json
@@ -17,8 +19,7 @@ import traceback
 
 
 
-
-Motors=[]
+Presenters=[]
 
 if __name__ == "__main__":
     try:
@@ -34,20 +35,19 @@ if __name__ == "__main__":
         logging.info(f"Finished Reading configs.")
         logging.info(f"Pinout Version::{PINOUT['VERSION']}")
         
-        for x in PINOUT["Motors"]:
-            Motors.append(Motor(x["DpinR"],x["DpinL"],Sensor(x["Ind_UP.Dpin"]),Sensor(x["Ind_DOWN.Dpin"])))
-            logging.debug(Motors[-1])
+        Door=Sensor(PINOUT["Door.DPin"])
 
-        logging.info(f"{len(Motors)} Motors connected to Terminal")
+
+        for x in PINOUT["Presenters"]:
+            MDP=x["Motor"]
+            Mot = Motor(MDP["DPinR"],MDP["DPinL"],MDP["Ind_UP.DPin"],MDP["Ind_DOWN.DPin"])
+            Light = Actor(x["Light.DPin"])
+            MDP=x["LightSens"]
+            LightSens = LightSensor(MDP["maxL"],MDP["minL"],MDP["APin"],config["LIGHT"]["LightThreashhold"])
+
+            Presenters.append(WECHSLER(Mot,Door,LightSens,Light))
 
         
-        Lsens = LightSensor(PINOUT["Sensor"]["light"][0]["maxL"],PINOUT["Sensor"]["light"][0]["minL"],PINOUT["Sensor"]["light"][0]["Apin"],config["LIGHT"]["LightThreashhold"])
-        logging.info(f"1 Light Sensor@Pin{Lsens.APin} active")
-
-        Opne = Sensor(PINOUT["Sensor"]["other"][0][0]) # PARRALELL SWITCH
-
-
-        Motors[0].ToPosterNum(2)
     except Exception as expt:
         logging.critical(f"Unhandled exception occured!:\n{traceback.format_exc()}")
         E_STOP()

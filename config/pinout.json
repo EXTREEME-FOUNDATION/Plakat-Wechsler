@@ -1,71 +1,30 @@
 {
     "_comment":"Pinout used by the program, DO NOT EDIT WITHOUT KNOWING WHAT YOU ARE DOING! VERSION should always match board version",
     "VERSION":"1.0.0",
-    "Sensor": {
-        "light": [
-            {
-                "Apin":0,
+    "Door.DPin":0,
+    "Presenters":[
+        {
+            "Motor":{
+                "DPinR":0,
+                "DPinL":0,
+                "Ind_UP.DPin":0,
+                "Ind_DOWN.DPin":0
+            },
+            "Light.DPin":0,
+            "LightSens":{
+                "APin":0,
                 "maxL":5,
-                "minL":1000,
-                "_comment":"maxL and minL are used to determine the relative value of the PRS's and will be normalized between 0.0 and 1.0 in code."
+                "minL":1000
             }
-            
-        ],
-        "Ind.Sensors": [
-            {
-                "Dpin":0,
-                "Location":"up"
-            },
-            {
-                "Dpin":0,
-                "Location":"down"
-            }
-        ],
-        "other":[
-            {
-                "Name":"open",
-                "Dpin":0
-            },
-            {
-                "Name":"open",
-                "Dpin":0
-            }
-        ],
-        "Buttons":[
-            {
-                "Dpin":0,
-                "function":"left"
-            },
-            {
-                "Dpin":0,
-                "function":"right"
-            }
-        ]
-    },
-    "Modules":{
-        "RC":{
-            "SDA":0,
-            "SCL":0,
-            "_comment":"Will be handled by system, this is just for completion"
-        },
-        "Light":{
-            "Dpin":0,
-            "_comment":"The phisical light fixture in the device"
-        }
-    },
-    "Motors":[
-        {
-            "DpinL":0,
-            "DpinR":0,
-            "Ind_UP.Dpin":0,
-            "Ind_DOWN.Dpin":0
-            
+
         },
         {
-            "DpinL":0,
-            "DpinR":0,
-            "Ind_UP.Dpin":0,
-            "Ind_DOWN.Dpin":0
+            "Motor":{
+                "DPinR":0,
+                "DPinL":0,
+                "Ind_UP.DPin":0,
+                "Ind_DOWN.DPin":0
+            }
         }
     ]
 }
