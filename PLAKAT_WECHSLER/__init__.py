@@ -43,12 +43,14 @@ class Safety:
     def E_STOP(s,msg=None):
         logging.critical(f"E-STOP TRIGGERED in <{s}> with error msg: \"{msg}\"")
         EStop.E_STOP()
+    def Retsave(s,lastpos,msg=None):
+        logging.error(f"TestSave Triggerred in <{s}> with error msg: \"{msg}\"")
 
 
 class Actor:
-    state=False
+    state:bool=False
     def __init__(s,Dpin:int):
-        s.DPin=Dpin
+        s.DPin:int=Dpin
         gz.setup(s.DPin,gz.OUT)
     def Switch(s):
         if s.state: s.off()
@@ -59,7 +61,7 @@ class Actor:
         s.tostate(False)
     def tostate(s,state:bool):
         gz.output(s.DPin,state)
-        s.state = state
+        s.state:bool= state
 
 
 class LightSensor:
@@ -75,7 +77,7 @@ class LightSensor:
     def update(s) -> float:
         #Code to read sensor
         s.Value = 0.5
-        return 0.5
+        return s.Value
     def __float__(s) -> float:
         return s.Value
     
@@ -87,7 +89,7 @@ class Sensor:
     def update(s) -> bool:
         #Code to read sensor
         s.State=False
-        return False
+        return s.State
     def __int__(s) -> bool:
         return s.State
 
@@ -100,8 +102,8 @@ class Sensor:
 class Motor(Safety):
     def __init__(s,RPin:int,LPin:int,SensU:Sensor,SensD:Sensor) -> False:
         """SensU: end-sensor | SensD: sensor for poster halt"""
-        s.R=RPin
-        s.L=LPin
+        s.R=Actor(RPin)
+        s.L=Actor(LPin)
         s.Direction=0# 0:off/brake | 1: clockwise | -1: counterclockwise
         s.Poster=0 #What poster is beeing shown
 
@@ -144,7 +146,7 @@ class Motor(Safety):
                     s.E_STOP("Timeout while Stopping")
                 break
     def __str__(s):
-        return f"Motor@Pin{s.R} and Pin{s.L}"
+        return f"Motor@Pin{s.R.DPin} and Pin{s.L.DPin}"
 
 
 class WECHSLER(Safety):
