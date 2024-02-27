@@ -1,5 +1,5 @@
 import RPi.GPIO as gz
-import numpy
+import numpy # has no implementation in this context!
 import math
 import logging
 import json
@@ -14,11 +14,30 @@ from PLAKAT_WECHSLER.flows import EStop
 from time import sleep
 
 
+#       message broadcast with system -> linux broadcast safe?
+#       Sigtimer safe?
+#       implement IO sub-program handling input for the device
+#       implement system checks for IOSP & dissable internet/unknown services -> minimizes interruptions
+#       start Proc with nice specifier
+#       save last version for backup
+#       over the air update with BLE module
+#       OTA has to be Fail-Safe.
+#       implement checks for the config file data -> use standard config / dissable afflicted parts -> shutdown should be the last resort!
+
+
+
+
+
+
+
+
+
+
 config = configparser.ConfigParser()
 config.read("config/config.ini")
 
                     
-def MAXTIME(time:int=config["SAFETY"].getint("Shutofftime")) -> FunctionType:
+def MAXTIME(time:int=config["SAFETY"].getint("Shutofftime")) -> FunctionType:# All time-critical functions should be appended to IO Thread, not handled by unsupervised programm without routine checks.
     """Limits time a function can take, returns TimeoutError if time has elapsed
     -> if out:=decorated_function() == TimeoutError:"""
     def ovrdecorator(func):
@@ -26,19 +45,19 @@ def MAXTIME(time:int=config["SAFETY"].getint("Shutofftime")) -> FunctionType:
             raise TimeoutError
         def wrapper(*args, **kwargs) -> any:
             signal.signal(signal.SIGALRM,hwlp)
-            signal.alarm(time)
+            signal.alarm(time)# Thrustworthy? is this systemfeature safe for use in time critical application?
             try:
                 out = func(*args,**kwargs)
                 return out
             except TimeoutError:
-                logging.warn(f"Function \"{func.__name__}\" took to long to execute. ({time}s)")
+                logging.warn(f"Function \"{func.__name__}\" took to long to execute. ({time}s)")#logging should be global instead of local -> return
                 return TimeoutError
         return wrapper
     return ovrdecorator
 
 
 
-class Safety:
+class Safety:# failsafe implements shuld only be handled by IO Thread!
     """implements different safety features into other classes"""
     def E_STOP(s,msg=None):
         logging.critical(f"E-STOP TRIGGERED in <{s}> with error msg: \"{msg}\"")
@@ -47,7 +66,7 @@ class Safety:
         logging.error(f"TestSave Triggerred in <{s}> with error msg: \"{msg}\"")
 
 
-class Actor:
+class Actor:# Actor should be more genral, only used by motor (maybe group Actor, Sensor and LSenscon)
     state:bool=False
     def __init__(s,Dpin:int):
         s.DPin:int=Dpin
@@ -74,14 +93,14 @@ class LightSensor:
         s.APin=APin
         testok = s.update()
 
-    def update(s) -> float:
+    def update(s) -> float:# update in check -> append to IO thead/multiprocessing child -> build failsafe arcitecture, message broadcast between programms, build IO Prog. in different, compilable language!
         #Code to read sensor
         s.Value = 0.5
         return s.Value
     def __float__(s) -> float:
         return s.Value
     
-class Sensor:
+class Sensor:# sensor braucht failsafe -> kontinuierlicher check, routine check!!!!!!!!!
     def __init__(s,DPin):
         s.State=False
         s.Dpin=DPin
@@ -102,7 +121,7 @@ class Sensor:
 class Motor(Safety):
     def __init__(s,RPin:int,LPin:int,SensU:Sensor,SensD:Sensor) -> False:
         """SensU: end-sensor | SensD: sensor for poster halt"""
-        s.R=Actor(RPin)
+        s.R=Actor(RPin)#Actor class is kind of pointless in this usecase -> use as template instead
         s.L=Actor(LPin)
         s.Direction=0# 0:off/brake | 1: clockwise | -1: counterclockwise
         s.Poster=0 #What poster is beeing shown
@@ -122,7 +141,7 @@ class Motor(Safety):
         #CAN CAUSE DEVICE DAMAGE IF NOT CORRECTLY ADRESSED
         #drive to left
         pass
-    @MAXTIME(time=1)
+    @MAXTIME(time=1)#time in ms or in s? CHECK & Documentation
     def __Stop(s):
         #ONLY USE THIS FUNCTION IF TIMEOUTERROR IS HANDLED!!!
         #CAN CAUSE DEVICE DAMAGE IF NOT CORRECTLY ADRESSED
@@ -133,8 +152,8 @@ class Motor(Safety):
         while(1):
             if num < s.Poster:
                 print("driving to left")
-                if s.__ToLeft() == TimeoutError:
-                    s.E_STOP("Timeout while Driving motor to Left")
+                if s.__ToLeft() == TimeoutError:# if handling check! possible to do in a batch (repetition)
+                    s.E_STOP("Timeout while Driving motor to Left")# kein e-stop, checkback
                     #Possible __ToRight() implementation
             elif num > s.Poster:
                 print("driving to right")
@@ -143,16 +162,16 @@ class Motor(Safety):
             else:
                 print("Reached destination")
                 if s.__Stop() == TimeoutError:
-                    s.E_STOP("Timeout while Stopping")
+                    s.E_STOP("Timeout while Stopping")# this is a critical funktion, disconnect power immediatly!!!!
                 break
     def __str__(s):
         return f"Motor@Pin{s.R.DPin} and Pin{s.L.DPin}"
 
 
-class WECHSLER(Safety):
+class WECHSLER(Safety):#init mit motorconfig anstelle von jedem object einzeln. Surface level soll nur befehle ans objekt schicken!
     """takes all input classes and puts them in an easy to access class.
     1 class instance represents 1 side of the Presenter"""
-    def __init__(s,Motor:Motor,open:Sensor,Lightsens:LightSensor=None,Light:Actor=None):
+    def __init__(s,Motor:Motor,open:Sensor,Lightsens:LightSensor=None,Light:Actor=None):#implement mit wechsler E-stop und fallback, KEIN UNDEFINIERTER STATUS!!!!!!!
         pass
 
 
